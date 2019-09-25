@@ -38,16 +38,18 @@ jobs:
                                   command: echo "Going to run the build artifact"
         deploy_to_dev:
                 docker:
-                        - image: circleci/openjdk:8-jdk
+                        - image: busybox:latest
                 steps:
+                        - checkout
                         - run:
                                 name: Deploy to Dev to Heroku
                                 command: |
                                   git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME_DEV.git master
         deploy_to_qa:
                 docker:
-                        - image: circleci/openjdk:8-jdk
+                        - image: busybox:latest
                 steps:
+                        - checkout
                         - run:
                                 name: Deploy to QA to Heroku
                                 command: |
