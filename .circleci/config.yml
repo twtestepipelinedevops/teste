@@ -35,4 +35,10 @@ jobs:
       - run:
           name: Deploy Master to Heroku
           command: |
-            git push https://heroku:bbebbe5a-9c5d-408f-b586-95e4612e0bec@git.heroku.com/twtestepipelinedevops.git master
+            git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git maste
+workflows:
+  version: 2
+  workflow:
+    jobs:
+    - build
+    - deploy
