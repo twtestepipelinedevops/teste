@@ -2,79 +2,72 @@ version: 2
 jobs:
         unit_test:
                 docker:
-                - image: circleci/openjdk:8-jdk
-                
+                        - image: circleci/openjdk:8-jdk
+
                 working_directory: ~/repo
-                
+
                 environment:
                         JVM_OPTS: -Xmx3200m
                         TERM: dumb
-                
                 steps:
                         - checkout
                         - restore_cache:
                                 keys:
-                                - v1-dependencies-{{ checksum "build.gradle" }}
-
-                                - v1-dependencies-
-
+                                        - v1-dependencies-{{ checksum "build.gradle" }}
+                                        - v1-dependencies-
                         - run: gradle dependencies
 
                         - save_cache:
                                 paths:
-                                - ~/.gradle
-                                key: v1-dependencies-{{ checksum "build.gradle" }}
-
-                        # run tests!
+                                        - ~/.gradle
+                                        key: v1-dependencies-{{ checksum "build.gradle" }}
                         - run: gradle test
         linting:
                 docker:
-                - image: busybox:latest
+                        - image: busybox:latest
                 steps:
-                - run:
-                        name: Lint Test
-                        command: echo "Going to run Lint Test"
+                        - run:
+                                  name: Lint Test
+                                  command: echo "Going to run Lint Test"
         build_artifact:
                 docker:
-                - image: busybox:latest
+                        - image: busybox:latest
                 steps:
-                - run:
-                        name: Build Artifact
-                        command: echo "Going to run the build artifact"
+                        - run:
+                                  name: Build Artifact
+                                  command: echo "Going to run the build artifact"
         deploy_to_dev:
                 docker:
-                - image: busybox:latest
+                        - image: busybox:latest
                 steps:
-                - run:
-                        name: Deploy to Dev
-                        command: |
-            git push https://heroku:$HEROKU_API_KEY@git.heroku.com/HEROKU_APP_NAME_DEV.git master
+                        - run:
+                                  name: Deploy to Dev to Heroku
+                                  command: | git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME_DEV.git master
         deploy_to_qa:
                 docker:
-                - image: busybox:latest
+                        - image: busybox:latest
                 steps:
-                - run:
-                        name: Deploy to QA
-                        command: |
-            git push https://heroku:$HEROKU_API_KEY@git.heroku.com/HEROKU_APP_NAME_QA.git master
+                        - run:
+                                  name: Deploy to QA to Heroku
+                                  command: command: | git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME_QA.git master
 
 workflows:
         version: 2
-        pipeline:
+        sample_pipeline:
                 jobs:
                         - linting
                         - unit_test
                         - build_artifact:
-                                requires:
-                                - unit_test
-                                - linting
+                                  requires:
+                                          - unit_test
+                                          - linting
                         - deploy_to_dev:
-                                requires:
-                                - build_artifact
+                                  requires:
+                                          - build_artifact
                         - hold_for_approval:
-                                type: approval
-                                requires:
-                                - deploy_to_dev
+                                  type: approval
+                                  requires:
+                                          - deploy_to_dev
                         - deploy_to_qa:
-                                requires:
-                                - hold_for_approval
+                                  requires:
+                                          - hold_for_approval
