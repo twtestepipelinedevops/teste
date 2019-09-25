@@ -2,11 +2,31 @@ version: 2
 jobs:
         unit_test:
                 docker:
-                - image: busybox:latest
+                - image: circleci/openjdk:8-jdk
+                
+                working_directory: ~/repo
+                
+                environment:
+                        JVM_OPTS: -Xmx3200m
+                        TERM: dumb
+                
                 steps:
-                - run:
-                        name: Unit Test
-                        command: echo "Going to run Unit Test"
+                        - checkout
+                        - restore_cache:
+                                keys:
+                                - v1-dependencies-{{ checksum "build.gradle" }}
+
+                                - v1-dependencies-
+
+                        - run: gradle dependencies
+
+                        - save_cache:
+                                paths:
+                                - ~/.gradle
+                                key: v1-dependencies-{{ checksum "build.gradle" }}
+
+                        # run tests!
+                        - run: gradle test
         linting:
                 docker:
                 - image: busybox:latest
@@ -27,21 +47,20 @@ jobs:
                 steps:
                 - run:
                         name: Deploy to Dev
-                        command: echo "Going to deploy to dev"
+                        command: |
+            git push https://heroku:$HEROKU_API_KEY@git.heroku.com/HEROKU_APP_NAME_DEV.git master
         deploy_to_qa:
                 docker:
                 - image: busybox:latest
                 steps:
                 - run:
                         name: Deploy to QA
-                        command: echo "Going to deploy to QA"
-                - run:
-                        name: Step no 2
-                        command: echo "Going to deploy to QA again"
+                        command: |
+            git push https://heroku:$HEROKU_API_KEY@git.heroku.com/HEROKU_APP_NAME_QA.git master
 
 workflows:
         version: 2
-        sample_pipeline:
+        pipeline:
                 jobs:
                         - linting
                         - unit_test
